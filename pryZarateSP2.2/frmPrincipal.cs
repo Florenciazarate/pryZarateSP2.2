@@ -15,14 +15,13 @@ namespace pryZarateSP2._2
 {
     public partial class frmPrincipal : Form
     {
-        // UI controls declared in designer but referenced here
         private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.Button btnMigrar;
 
         private readonly string dataFolder = Path.Combine(Application.StartupPath, "Data");
         private readonly string categoriasFileName = "Categorias.txt";
         private readonly string articulosFileName = "Articulos.txt";
-        private readonly string databaseFileName = "Distribuidora.mdb";
+        private readonly string databaseFileName = "Distribuidora.accdb";
 
         public frmPrincipal()
         {
@@ -42,14 +41,20 @@ namespace pryZarateSP2._2
                 Directory.CreateDirectory(dataFolder);
                 CreateSampleFilesIfMissing();
                 var dbPath = Path.Combine(dataFolder, databaseFileName);
+                string provider = null;
                 if (!File.Exists(dbPath))
                 {
                     Log("Base de datos no encontrada. Creando... ");
-                    CreateAccessDatabase(dbPath);
-                    Log("Base de datos creada.");
+                    provider = CreateAccessDatabase(dbPath);
+                    Log($"Base de datos creada (provider: {provider}).");
+                }
+                else
+                {
+                    provider = DetectProviderForOpen(dbPath);
+                    Log($"Usando provider detectado: {provider}");
                 }
 
-                var connString = $"Provider=Microsoft.Jet.OLEDB.4.0;Data Source={dbPath};";
+                var connString = $"Provider={provider};Data Source={dbPath};Persist Security Info=False;";
                 using (var conn = new OleDbConnection(connString))
                 {
                     conn.Open();
@@ -88,38 +93,132 @@ namespace pryZarateSP2._2
             }
         }
 
-        private void CreateAccessDatabase(string path)
+        private string CreateAccessDatabase(string path)
         {
-            // Use ADOX Catalog COM object to create an Access .mdb file (late-bound)
+            var aceProviders = new[] { "Microsoft.ACE.OLEDB.16.0", "Microsoft.ACE.OLEDB.12.0" };
             var progId = "ADOX.Catalog";
             var catType = Type.GetTypeFromProgID(progId);
-            if (catType == null)
-                throw new InvalidOperationException("No se puede obtener ADOX.Catalog. Asegure que MDAC/ADOX estén instalados en el sistema.");
 
-            object cat = null;
+            if (catType != null)
+            {
+                foreach (var prov in aceProviders)
+                {
+                    object cat = null;
+                    try
+                    {
+                        cat = Activator.CreateInstance(catType);
+                        var connStr = $"Provider={prov};Data Source={path};";
+                        try
+                        {
+                            catType.InvokeMember("Create", System.Reflection.BindingFlags.InvokeMethod, null, cat, new object[] { connStr });
+                            Log($"Base de datos creada mediante ADOX.Catalog con provider {prov}.");
+                            return prov;
+                        }
+                        catch (Exception ex)
+                        {
+                            var inner = (ex is System.Reflection.TargetInvocationException tie && tie.InnerException != null) ? tie.InnerException.Message : ex.Message;
+                            Log($"ADOX.Catalog.Create con {prov} falló: {inner}");
+                        }
+                    }
+                    finally
+                    {
+                        if (cat != null)
+                            Marshal.ReleaseComObject(cat);
+                    }
+                }
+            }
+            else
+            {
+                Log("ADOX.Catalog no disponible en el sistema.");
+            }
+
+            var accessProgId = "Access.Application";
+            var appType = Type.GetTypeFromProgID(accessProgId);
+            if (appType != null)
+            {
+                object app = null;
+                try
+                {
+                    app = Activator.CreateInstance(appType);
+                    try
+                    {
+                        appType.InvokeMember("NewCurrentDatabase", System.Reflection.BindingFlags.InvokeMethod, null, app, new object[] { path });
+                        Log("Base de datos creada mediante Access.Application.NewCurrentDatabase.");
+                        try { appType.InvokeMember("Quit", System.Reflection.BindingFlags.InvokeMethod, null, app, null); } catch { }
+                        // Assume ACE 16 if Access exists
+                        return "Microsoft.ACE.OLEDB.16.0";
+                    }
+                    catch (Exception ex)
+                    {
+                        var inner = (ex is System.Reflection.TargetInvocationException tie && tie.InnerException != null) ? tie.InnerException.Message : ex.Message;
+                        Log($"Access.Application.NewCurrentDatabase falló: {inner}");
+                    }
+                }
+                finally
+                {
+                    if (app != null)
+                        Marshal.ReleaseComObject(app);
+                }
+            }
+            else
+            {
+                Log("Access.Application no disponible en el sistema.");
+            }
+
             try
             {
-                cat = Activator.CreateInstance(catType);
-                // call Create method: cat.Create("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=path;")
-                var connStr = $"Provider=Microsoft.Jet.OLEDB.4.0;Data Source={path};";
-                catType.InvokeMember("Create", System.Reflection.BindingFlags.InvokeMethod, null, cat, new object[] { connStr });
+                var progJet = "ADOX.Catalog";
+                var catTypeJet = Type.GetTypeFromProgID(progJet);
+                if (catTypeJet != null)
+                {
+                    object catJet = Activator.CreateInstance(catTypeJet);
+                    try
+                    {
+                        var connStrJet = $"Provider=Microsoft.Jet.OLEDB.4.0;Data Source={Path.ChangeExtension(path, ".mdb")};";
+                        catTypeJet.InvokeMember("Create", System.Reflection.BindingFlags.InvokeMethod, null, catJet, new object[] { connStrJet });
+                        Log("Se creó un archivo .mdb como alternativa.");
+                        return "Microsoft.Jet.OLEDB.4.0";
+                    }
+                    finally { if (catJet != null) Marshal.ReleaseComObject(catJet); }
+                }
             }
-            finally
+            catch (Exception ex)
             {
-                if (cat != null)
-                    Marshal.ReleaseComObject(cat);
+                Log($"Creación alternativa .mdb falló: {ex.Message}");
             }
+
+            throw new InvalidOperationException("No se pudo crear la base de datos .accdb/.mdb. Instale Microsoft Access o Microsoft Access Database Engine (ACE) y asegure que la arquitectura (x86/x64) coincida con la aplicación.");
+        }
+
+        private string DetectProviderForOpen(string path)
+        {
+            var providers = new[] { "Microsoft.ACE.OLEDB.16.0", "Microsoft.ACE.OLEDB.12.0", "Microsoft.Jet.OLEDB.4.0" };
+            foreach (var prov in providers)
+            {
+                var connStr = $"Provider={prov};Data Source={path};Persist Security Info=False;";
+                try
+                {
+                    using (var conn = new OleDbConnection(connStr))
+                    {
+                        conn.Open();
+                        conn.Close();
+                        return prov;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"Intento de apertura con {prov} falló: {ex.Message}");
+                }
+            }
+            throw new InvalidOperationException("No se encontró un proveedor OLEDB registrado que pueda abrir la base de datos. Instale ACE o ajuste la plataforma (x86/x64).");
         }
 
         private void EnsureTables(OleDbConnection conn)
         {
-            // Create tables if they don't exist
             var cmd = conn.CreateCommand();
-            // Categorias: Id (int primary key), Nombre (text)
             cmd.CommandText = "IF NOT EXISTS (SELECT * FROM MSysObjects WHERE Name='Categorias') SELECT 1";
             try
             {
-                // Jet SQL doesn't support IF NOT EXISTS in that form; attempt create and ignore errors
                 cmd.CommandText = "CREATE TABLE Categorias (Id INTEGER PRIMARY KEY, Nombre TEXT(100))";
                 cmd.ExecuteNonQuery();
                 Log("Tabla 'Categorias' creada.");
