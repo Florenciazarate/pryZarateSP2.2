@@ -54,12 +54,16 @@ namespace pryZarateSP2._2
                 {
                     // Si alguna de las dos tablas ya tiene datos...
                     var resp = MessageBox.Show(
-                        "La base ya contiene datos. Si continua, pueden generarse errores por IDs duplicados.\n\n¿Desea continuar igual?",
+                        "La base ya contiene datos.\n\n¿Desea limpiar la base y volver a migrar?",
                         "Atencion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-                    // ...muestro un cartel preguntando si quiere seguir.
+                    // ...muestro un cartel preguntando si quiere limpiar y volver a migrar.
 
                     if (resp != DialogResult.Yes) return;
                     // Si NO dijo "Sí", salgo del método.
+
+                    Log("Limpiando datos anteriores...");
+                    BaseDatos.LimpiarTablas(); // Borro todas las filas existentes.
+                    Log("");
                 }
 
                 Log("Migrando datos de Categorias...");     // Aviso en el log.

@@ -145,6 +145,12 @@ namespace pryZarateSP2._2.BaseDeDatos
             return agregados;
         }
 
+        public static void LimpiarTablas() // Borra todos los datos de las dos tablas para poder volver a migrar.
+        {
+            EjecutarComando("DELETE FROM Articulos"); // Borro primero Articulos.
+            EjecutarComando("DELETE FROM Categorias"); // Después Categorias.
+        }
+
         public static bool TablaTieneDatos(string nombreTabla) // Recibe el nombre de una tabla y devuelve true/false.
 
         {
