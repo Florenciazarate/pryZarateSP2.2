@@ -62,7 +62,7 @@ namespace pryZarateSP2._2
             this.lblTitulo.AutoSize = true;
             this.lblTitulo.Font = new System.Drawing.Font("Segoe UI Semibold", 18F, System.Drawing.FontStyle.Bold);
             this.lblTitulo.ForeColor = System.Drawing.Color.White;
-            this.lblTitulo.Location = new System.Drawing.Point(22, 14);
+            this.lblTitulo.Location = new System.Drawing.Point(21, 14);
             this.lblTitulo.Name = "lblTitulo";
             this.lblTitulo.Size = new System.Drawing.Size(227, 32);
             this.lblTitulo.TabIndex = 0;
