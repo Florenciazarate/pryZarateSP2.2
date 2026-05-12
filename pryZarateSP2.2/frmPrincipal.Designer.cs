@@ -66,7 +66,7 @@ namespace pryZarateSP2._2
             this.lblTitulo.Name = "lblTitulo";
             this.lblTitulo.Size = new System.Drawing.Size(227, 32);
             this.lblTitulo.TabIndex = 0;
-            this.lblTitulo.Text = "Migraci髇 de Datos";
+            this.lblTitulo.Text = "Migraci贸n de Datos";
             // 
             // pnlContenido
             // 
@@ -92,7 +92,7 @@ namespace pryZarateSP2._2
             this.lblInformacion.Name = "lblInformacion";
             this.lblInformacion.Size = new System.Drawing.Size(88, 19);
             this.lblInformacion.TabIndex = 1;
-            this.lblInformacion.Text = "Informaci髇:";
+            this.lblInformacion.Text = "Informaci贸n:";
             // 
             // txtLog
             // 
@@ -115,7 +115,7 @@ namespace pryZarateSP2._2
             this.txtLog.Name = "txtLog";
             this.txtLog.PasswordChar = '\0';
             this.txtLog.PlaceholderForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(116)))), ((int)(((byte)(139)))));
-            this.txtLog.PlaceholderText = "Detalles de la migracion...";
+            this.txtLog.PlaceholderText = "Detalles de la migraci贸n...";
             this.txtLog.ReadOnly = true;
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.txtLog.SelectedText = "";
@@ -133,12 +133,12 @@ namespace pryZarateSP2._2
             this.btnMigrar.FillColor = System.Drawing.Color.Yellow;
             this.btnMigrar.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
             this.btnMigrar.ForeColor = System.Drawing.Color.Black;
-            this.btnMigrar.HoverState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(251)))), ((int)(((byte)(146)))), ((int)(((byte)(60)))));
+            this.btnMigrar.HoverState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(234)))), ((int)(((byte)(179)))), ((int)(((byte)(8)))));
             this.btnMigrar.Location = new System.Drawing.Point(26, 23);
             this.btnMigrar.Name = "btnMigrar";
             this.btnMigrar.Size = new System.Drawing.Size(210, 40);
             this.btnMigrar.TabIndex = 0;
-            this.btnMigrar.Text = "Iniciar Migraci髇";
+            this.btnMigrar.Text = "Iniciar Migraci贸n";
             this.btnMigrar.Click += new System.EventHandler(this.btnMigrar_Click);
             // 
             // frmPrincipal
