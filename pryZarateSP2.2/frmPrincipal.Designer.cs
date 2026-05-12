@@ -133,7 +133,7 @@ namespace pryZarateSP2._2
             this.btnMigrar.FillColor = System.Drawing.Color.Yellow;
             this.btnMigrar.Font = new System.Drawing.Font("Segoe UI Semibold", 10F, System.Drawing.FontStyle.Bold);
             this.btnMigrar.ForeColor = System.Drawing.Color.Black;
-            this.btnMigrar.HoverState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(234)))), ((int)(((byte)(179)))), ((int)(((byte)(8)))));
+            this.btnMigrar.HoverState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(204)))), ((int)(((byte)(204)))), ((int)(((byte)(0)))));
             this.btnMigrar.Location = new System.Drawing.Point(26, 23);
             this.btnMigrar.Name = "btnMigrar";
             this.btnMigrar.Size = new System.Drawing.Size(210, 40);
