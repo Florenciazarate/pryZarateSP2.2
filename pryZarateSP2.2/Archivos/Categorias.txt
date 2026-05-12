@@ -1,0 +1,6 @@
+1|Procesadores
+2|Disco Rigido
+3|Gabinete PC
+4|Fuentes
+5|DVD
+6|Teclados
